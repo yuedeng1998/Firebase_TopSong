@@ -9,6 +9,14 @@ import string
 import re
 
 
+
+def init():
+    response = requests.get(url).json()
+    if not response:
+        out = {'root':{'is_dict':True}, 'data':{'is_dict':True}}
+        out = json.dumps(out)
+        response = requests.put(url, out)
+
 def partition_data(file_src, k):
     with open(file_src) as f:
         contents = f.read()
@@ -47,8 +55,8 @@ def add_new_data(data, k, datalist, data_addresses):
     return data
 
 
-def upload(file_src, data_path, k):
-    url = 'https://project-dc1b5-default-rtdb.firebaseio.com/root.json'
+def upload(rurl, durl, file_src, data_path, k):
+    url = rurl +'.json'
     root = requests.get(url).json()
     dest_dict = search_dest(root, data_path)
     filename, extend = file_src.split('.')
@@ -58,7 +66,7 @@ def upload(file_src, data_path, k):
 # 2: Partition functions to assign k places return data_addresses
     data_addresses = []
     for i in range(k):
-        data_addresses.append('/d'+str(i+70)+'.json')
+        data_addresses.append('/d'+str(i+30)+'.json')
 # 3: Append meta full file name path and storage dict 'p1: '/1.json'
     for i in range(k):
         datanode['p'+str(i+1)] = data_addresses[i]
@@ -67,7 +75,7 @@ def upload(file_src, data_path, k):
     response = requests.put(url, root)
     datalist = partition_data(file_src, k)
 # read src file and partition into files
-    urld = 'https://project-dc1b5-default-rtdb.firebaseio.com/data/.json'
+    urld = durl +'.json'
     data = requests.get(urld).json()
     data = add_new_data(data, k, datalist, data_addresses)
     out = json.dumps(data)
@@ -75,9 +83,9 @@ def upload(file_src, data_path, k):
 
 
 def search_dict(root, path):
-    if not root:
-        root = {'root': {}}
-    node = root['root']
+    node = root
+    if not node:
+        node = {}
     paths = path.split('/')
     for i in range(len(paths)):
         if not paths[i]:
@@ -90,16 +98,17 @@ def search_dict(root, path):
     return root
 
 
-def make_dir(url, data_path):
-    response = requests.get(url).json()
+def make_dir(rurl, data_path):
+    rurl +='.json'
+    response = requests.get(rurl).json()
     out = search_dict(response, data_path)
     out = json.dumps(out)
-    response = requests.put(url, out)
+    response = requests.put(rurl, out)
 
 
-def ls_all_files(cur_path):
+def ls_all_files(rurl, cur_path):
     response = requests.get(
-        'https://project-dc1b5-default-rtdb.firebaseio.com/root'+cur_path + '.json').json()
+       rurl+cur_path + '.json').json()
     if not response:
         print('')
         return
@@ -111,10 +120,10 @@ def ls_all_files(cur_path):
         print(key)
 
 
-def getPartitionLocations(file_path):
+def getPartitionLocations(rurl, file_path):
     file_path = file_path.replace('.', '/')
     response = requests.get(
-        'https://project-dc1b5-default-rtdb.firebaseio.com/root'+file_path + '.json').json()
+        rurl+file_path + '.json').json()
     if not response:
         raise ValueError('No Such File!')
     data_addresses = []
@@ -123,8 +132,7 @@ def getPartitionLocations(file_path):
     return data_addresses
 
 
-def readPartition(data_addresses):
-    data_url = 'https://project-dc1b5-default-rtdb.firebaseio.com/data'
+def readPartition(data_url, data_addresses):
     file_content = []
     for address in data_addresses:
         file_url = data_url + address
@@ -132,52 +140,52 @@ def readPartition(data_addresses):
     return file_content
 
 
-def rmPartition(data_addresses):
-    data_url = 'https://project-dc1b5-default-rtdb.firebaseio.com/data'
+def rmPartition(data_url, data_addresses):
     for address in data_addresses:
         file_url = data_url + address
         requests.delete(file_url)
 
 
-def rm_file(file_path):
+def rm_file(rurl, durl, file_path):
     if not file_path.__contains__('.'):
         raise ValueError('Only File can be delete')
-    data_addresses = getPartitionLocations(file_path)
-    rmPartition(data_addresses)
+    data_addresses = getPartitionLocations(rurl, file_path)
+    rmPartition(durl, data_addresses)
     file_path = file_path.replace('.', '/')
     requests.delete(
-        'https://project-dc1b5-default-rtdb.firebaseio.com/root' + file_path + '.json')
+        rurl + file_path + '.json')
 
 
-def cat_file(file_path):
-    data_addresses = getPartitionLocations(file_path)
-    return readPartition(data_addresses)
+def cat_file(rurl, durl, file_path):
+    data_addresses = getPartitionLocations(rurl, file_path)
+    return readPartition(durl, data_addresses)
 
 
 if len(sys.argv) < 3:
     raise ValueError('Need valid data path!')
 instruction = sys.argv[1]
 data_path = sys.argv[2]
-url = 'https://project-dc1b5-default-rtdb.firebaseio.com/.json'
 if instruction == 'put':
     file_src = sys.argv[3]
     k = int(sys.argv[4])
-
+url = 'https://project-dc1b5-default-rtdb.firebaseio.com/.json'
+init()
+rurl = 'https://project-dc1b5-default-rtdb.firebaseio.com/root'
+durl = 'https://project-dc1b5-default-rtdb.firebaseio.com/data'
 if instruction == 'mkdir':
-    make_dir(url, data_path)
+    make_dir(rurl, data_path)
 elif instruction == 'ls':
-    ls_all_files(data_path)
+    ls_all_files(rurl, data_path)
 elif instruction == 'cat':
-    print(cat_file(data_path))
+    print(cat_file(rurl, durl,data_path))
 elif instruction == 'rm':
-    rm_file(data_path)
+    rm_file(rurl, durl, data_path)
     # data folder need at least 1 attribute or it will be delete,
     #  if data we want to delete already deleted, no error
 elif instruction == 'put':
-    upload(file_src, data_path, k)
+    upload(rurl, durl, file_src, data_path, k)
 
-# TODO 1: Init create root and data
+# TODO 1: LS: if not a dict, should list file_name.ext 
 
-# TODO 2: avoid define url in func
+# TODO 2: add/test if upload csv file
 
-# TODO 3: add/test if upload csv file
