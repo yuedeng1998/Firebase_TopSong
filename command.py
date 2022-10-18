@@ -117,7 +117,13 @@ def ls_all_files(rurl, cur_path):
     for key in response.keys():
         if key == 'is_dict':
             continue
-        print(key)
+        node = response[key]
+        if 'is_dict' not in node.keys():
+            for ext in node.keys():
+                filename = str(key) +'.' + str(ext)
+                print(filename)
+        else:
+            print(key)
 
 
 def getPartitionLocations(rurl, file_path):
