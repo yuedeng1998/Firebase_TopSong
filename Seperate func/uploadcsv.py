@@ -99,3 +99,12 @@ file_src = 'car.csv'
 data_path = '/user/upcsv'
 k = 6
 upload(rurl, durl, file_src, data_path, k, 'car_ID')
+
+# TODO FOR Task 2: 
+# 1. need flag to choose unused location for new data 
+# 2. hash function might need more cases: 
+#       csv: cur just depend on the range of pk which is a int (force enter a pk(a column name, if txt enter ""))
+#       txt: just divide equally by the length of the content 
+# 3. current data_address is data:{"intkey": value, ....} 
+#       might use more nested way for future larger dataset or more complex hash function
+
