@@ -5,8 +5,7 @@ from urllib import response
 import requests
 import csv
 import json
-import string
-import re
+
 
 
 
@@ -191,7 +190,4 @@ elif instruction == 'rm':
 elif instruction == 'put':
     upload(rurl, durl, file_src, data_path, k)
 
-# TODO 1: LS: if not a dict, should list file_name.ext 
-
-# TODO 2: add/test if upload csv file
 
