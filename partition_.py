@@ -37,7 +37,7 @@ def getPartitionLocations(file_path):
 
 #改了一下 只read某一个partition
 #原来的readPartition function移到cat_file
-#cat_file返回一整个文件as a dictionary
+#cat_file返回一整个文件as a list of dictionaries
 def readPartition(file_path, parition_number):
     data_addresses = getPartitionLocations(file_path)
     address = data_addresses.get(parition_number)
