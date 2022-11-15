@@ -23,9 +23,9 @@ def getPartitionLocations(rurl, file_path):
         data_addresses['p'+str(i+1)] = response['p'+str(i+1)]
     return data_addresses
 
-def readPartition(data_url, rurl, file_path, parition_number):
+def readPartition(data_url, rurl, file_path, partition_number):
     data_addresses = getPartitionLocations(rurl, file_path)
-    address = data_addresses.get(parition_number)
+    address = data_addresses.get(partition_number)
     file_url = data_url + address
     return requests.get(file_url).json()
 
@@ -57,6 +57,8 @@ def Reduce_spotify(file_path):
             continue
         for song in temp:
             songs.append(song)
+    if len(songs) == 0:
+        print('No songs matching your criteria were found')
     return songs
 
 
@@ -94,12 +96,14 @@ def Reduce_tiktok(file_path):
             continue
         for song in temp:
             songs.append(song)
+    if len(songs) == 0:
+        print('No songs matching your criteria were found')
     return songs
 
 
 user_input = {'artist': 'Harry Styles', 'dance_left': '0.1', 'dance_right': '1', \
-              'energy_left': '0', 'energy_right': '1'}
+              'energy_left': '0', 'energy_right': '0'}
 file_path = '/tiktok/TikTok_songs_2022_edit.csv'
 partition_number = 'p1'
-# print(mapPartition_tiktok(file_path, partition_number, user_input))
-# print(Reduce_tiktok(file_path))
+print(mapPartition_tiktok(file_path, partition_number, user_input))
+print(Reduce_tiktok(file_path))
