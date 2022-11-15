@@ -36,8 +36,8 @@ def partition_data(file_src, k, pk):
     partitions = []
     if ext == 'csv':
         contents = csv2json(file_src, pk)
-        maxkey = max(contents.keys())
-        interval = int(maxkey)//k
+        length = len(contents.keys())
+        interval = length//k
         last = 0
         partitions = [[] for i in range(k)]
         for i in range(k):
@@ -98,7 +98,7 @@ def upload(rurl, durl, file_src, data_path, k, pk):
         new_address = generate_address()
         while check_address(new_address):
             new_address = generate_address()
-        data_addresses.append(new_address + '.json')
+        data_addresses.append('/' + new_address + '.json')
 # 3: Append meta full file name path and storage dict 'p1: '/1.json'
     for i in range(k):
         datanode['p'+str(i+1)] = data_addresses[i]
@@ -114,14 +114,15 @@ def upload(rurl, durl, file_src, data_path, k, pk):
     response = requests.put(urld, out)
 rurl = 'https://project-dc1b5-default-rtdb.firebaseio.com/root'
 durl = 'https://project-dc1b5-default-rtdb.firebaseio.com/data'
-file_src = '/Users/stella/Firebase_TopSong/Seperate func/car.csv'
-# file_src = 'TikTok_songs_2022_edit.csv'
+# file_src = '/Users/stella/Firebase_TopSong/Seperate func/car.csv'
 
-# data_path = '/test'
+
+# data_path = '/spotify'
 # file_src = 'spotify_top_charts_22_edit.csv'
-data_path = '/car'
+data_path = '/tiktok'
+file_src = 'TikTok_songs_2022_edit.csv'
 k = 5
-upload(rurl, durl, file_src, data_path, k, 'car_ID')
+upload(rurl, durl, file_src, data_path, k, 'index')
 
 # TODO FOR Task 2: 
 # 1. need flag to choose unused location for new data 
