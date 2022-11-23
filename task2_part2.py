@@ -54,14 +54,15 @@ def mapPartition_TikTok(file_path, partition_number):
         tiktok_songs.append(song['track_name'])
     
     rep = list(set(title).intersection(tiktok_songs))
-    return len(rep)
+    return rep
 
 def Reduce_Tiktok(rurl, file_path):
     addresses = getPartitionLocations(rurl, file_path)
-    count = 0
+    rep = []
     for key in addresses.keys():
-        count += mapPartition_TikTok(file_path, key)
-    return count
+        new = mapPartition_TikTok(file_path, key)
+        rep = list(set(rep + new))
+    return len(rep)
 
 def mapPartition_Spotify(file_path, partition):
     rurl = 'https://project-dc1b5-default-rtdb.firebaseio.com/root'
@@ -78,21 +79,22 @@ def mapPartition_Spotify(file_path, partition):
         spotify_songs.append(song['track_name'])
     
     rep = list(set(title).intersection(spotify_songs))
-    return len(rep)
+    return rep
 
 def Reduce_Spotify(rurl, file_path):
     addresses = getPartitionLocations(rurl, file_path)
-    count = 0
+    rep = []
     for key in addresses.keys():
-        count += mapPartition_Spotify(file_path, key)
-    return count
+        new = mapPartition_Spotify(file_path, key)
+        rep = list(set(rep + new))
+    return len(rep)
 
 
 
 durl = 'https://project-dc1b5-default-rtdb.firebaseio.com/data'
 rurl = 'https://project-dc1b5-default-rtdb.firebaseio.com/root'
 file_path = '/hotSong/pastHotSongs.csv'
-partition_number = 'p2'
+partition_number = 'p1'
 print(mapPartition_TikTok(file_path, partition_number))
 print(Reduce_Tiktok(rurl, file_path))
 partition_number = 'p10'
